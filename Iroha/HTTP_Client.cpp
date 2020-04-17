@@ -116,7 +116,7 @@ void session::on_read(
 		return fail(ec, "read");
 
 	// Write the message to standard out
-	std::cout << res_ << std::endl;
+	std::cout << res_.body() << std::endl;
 
 	// Set a timeout on the operation
 	beast::get_lowest_layer(stream_).expires_after(std::chrono::seconds(30));

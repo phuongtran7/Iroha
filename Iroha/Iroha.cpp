@@ -7,8 +7,6 @@ int main()
 	auto key = config["Key"].as<std::string>();
 	auto token = config["Token"].as<std::string>();
 
-	fmt::print("Key: {} - Token {}\n", key, token);
-
     auto secrect = fmt::format("&key={}&token={}", key, token);
 
     auto const host = "api.trello.com";
