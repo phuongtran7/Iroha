@@ -17,6 +17,7 @@ int main()
     Client client{ioc, ctx};
 
     client.view_board();
+    client.view_list("2");
 
     std::getchar();
 	return 0;

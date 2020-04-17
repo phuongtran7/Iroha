@@ -96,33 +96,47 @@ void Client::view_board()
 	// Write the message to standard out
 	//std::cout << res << std::endl;
 
+	tabulate::Table header;
+	header.add_row({ "Boards" });
+	header[0][0].format()
+		.font_color(tabulate::Color::green)
+		.font_align(tabulate::FontAlign::center)
+		.font_style({ tabulate::FontStyle::bold });
+
+
 	tabulate::Table boards;
-	boards.add_row({ "ID", "Name" });
+	boards.add_row({ "ID", "Name", "Trello ID"});
 
 	nlohmann::json body = nlohmann::json::parse(res.body());
 	for (auto i = 0; i < body.size(); ++i) {
-		boards.add_row({ std::to_string(i), body[i].find("name").value() });
+		boards.add_row({ std::to_string(i), body[i].find("name").value(), body[i].find("id").value() });
 		Item board{ body[i].find("id").value() , body[i].find("name").value() };
-		boards_map_.emplace(std::pair<std::string, Item>(std::to_string(i), board));
+		boards_map_.emplace(std::to_string(i), board);
 	}
 
-	boards[0][0].format()
-		.font_color(tabulate::Color::yellow)
-		.font_align(tabulate::FontAlign::center)
-		.font_style({ tabulate::FontStyle::bold });
+	for (auto i = 0; i < 3; i++) {
+		// Center all the collumns of the first row
+		boards[0][i].format()
+			// For some reason if embedded inside another table
+			// the header cannot be colored
+			//.font_color(tabulate::Color::green)
+			.font_align(tabulate::FontAlign::center)
+			.font_style({ tabulate::FontStyle::bold });
+	}
 
-	boards[0][1].format()
-		.font_color(tabulate::Color::yellow)
-		.font_align(tabulate::FontAlign::center)
-		.font_style({ tabulate::FontStyle::bold });
+	header.add_row({ boards });
+	header[1].format().hide_border_top();
 
-	std::cout << boards << std::endl;
+	std::cout << header << std::endl;
 }
 
-void Client::view_list(std::string_view board_id)
+void Client::view_list(const std::string& board_id)
 {
+	// Search for trello ID using user-friendly board ID
+	auto board = boards_map_.find(board_id)->second;
+
 	http::response<http::string_body> res;
-	auto const target = fmt::format("/1/boards/{}/lists?{}", secrect_);
+	auto const target = fmt::format("/1/boards/{}/lists?{}", board.trello_id, secrect_);
 	make_request(target);
 
 	// Send the HTTP request to the remote host
@@ -132,5 +146,36 @@ void Client::view_list(std::string_view board_id)
 	http::read(stream_, buffer_, res);
 
 	// Write the message to standard out
-	std::cout << res << std::endl;
+	//std::cout << res << std::endl;
+
+	tabulate::Table header;
+	header.add_row({ "Lists" });
+	header[0][0].format()
+		.font_color(tabulate::Color::green)
+		.font_align(tabulate::FontAlign::center)
+		.font_style({ tabulate::FontStyle::bold });
+
+
+	tabulate::Table boards;
+	boards.add_row({ "ID", "Name", "Trello ID" });
+
+	nlohmann::json body = nlohmann::json::parse(res.body());
+	for (auto i = 0; i < body.size(); ++i) {
+		auto list_id = fmt::format("{}-{}", board_id, i); // Prepend the user-friendly board ID
+		boards.add_row({ list_id, body[i].find("name").value(), body[i].find("id").value() });
+		Item board{ body[i].find("id").value() , body[i].find("name").value() };
+		boards_map_.emplace(std::to_string(i), board);
+	}
+
+	for (auto i = 0; i < 3; i++) {
+		// Center all the collumns of the first row
+		boards[0][i].format()
+			.font_align(tabulate::FontAlign::center)
+			.font_style({ tabulate::FontStyle::bold });
+	}
+
+	header.add_row({ boards });
+	header[1].format().hide_border_top();
+
+	std::cout << header << std::endl;
 }

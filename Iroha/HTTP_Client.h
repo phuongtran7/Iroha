@@ -54,5 +54,5 @@ public:
 	Client& operator=(Client&& other) noexcept;
 
 	void view_board(); // View all available board
-	void view_list(std::string_view board_id); // View lists in a particualar board
+	void view_list(const std::string& board_id); // View lists in a particualar board
 };
