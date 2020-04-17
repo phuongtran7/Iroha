@@ -13,13 +13,15 @@
 #include "fmt/format.h"
 #include <nlohmann/json.hpp>
 #include <tabulate/table.hpp>
+#include <robin-hood-hashing/robin_hood.h>
 
 // Performs an HTTP GET and prints the response
 class session : public std::enable_shared_from_this<session>
 {
 private:
 	enum class ExpectedResponse {
-		DISPLAYBOARDS
+		DISPLAY_BOARDS,
+		DISPLAY_LISTS,
 	};
 	boost::asio::ip::tcp::resolver resolver_;
 	boost::beast::ssl_stream<boost::beast::tcp_stream> stream_;
@@ -28,6 +30,7 @@ private:
 	boost::beast::http::response<boost::beast::http::string_body> res_;
 	std::string secrect_;
 	ExpectedResponse expected_response_;
+	robin_hood::unordered_map<std::string, std::string> boards_map;
 
 private:
 	void fail(boost::beast::error_code ec, char const* what);
@@ -40,5 +43,8 @@ private:
 
 public:
 	explicit session(boost::asio::executor ex, ssl::context& ctx, const std::string& secrect);
-	void run(char const* host, char const* port, char const* target, int version);
+	void run(char const* host, char const* port, int version);
+	void get_list(std::string board_id);
+	void get_boards(std::string target);
+	std::string select_board();
 };

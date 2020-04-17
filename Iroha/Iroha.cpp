@@ -29,12 +29,25 @@ int main()
     // Launch the asynchronous operation
     // The session is constructed with a strand to
     // ensure that handlers do not execute concurrently.
-    std::make_shared<session>(boost::asio::make_strand(ioc), ctx, secrect)->run(host, port, target.c_str(), version);
+    auto sess = std::make_shared<session>(boost::asio::make_strand(ioc), ctx, secrect);
+    sess->run(host, port, version);
 
-    // Run the I/O service. The call will return when
-    // the get operation is complete.
-    ioc.run();
+    auto thread = std::thread([&] {
+            // Run the I/O service. The call will return when
+            // the get operation is complete.
+            ioc.run();
+        });
 
+    std::this_thread::sleep_for(std::chrono::seconds(5));
+
+    sess->get_boards(target.c_str());
+
+    std::this_thread::sleep_for(std::chrono::seconds(2));
+
+    auto temp_id = sess->select_board();
+
+    sess->get_list(temp_id);
+    
     std::getchar();
 	return 0;
 }

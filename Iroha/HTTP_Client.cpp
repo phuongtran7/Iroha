@@ -22,7 +22,7 @@ session::session(net::executor ex, ssl::context& ctx, const std::string& secrect
 }
 
 // Start the asynchronous operation
-void session::run(char const* host, char const* port, char const* target, int version)
+void session::run(char const* host, char const* port, int version)
 {
 	// Set SNI Hostname (many hosts need this to handshake successfully)
 	if (!SSL_set_tlsext_host_name(stream_.native_handle(), host))
@@ -35,7 +35,6 @@ void session::run(char const* host, char const* port, char const* target, int ve
 	// Set up an HTTP GET request message
 	req_.version(version);
 	req_.method(http::verb::get);
-	req_.target(target);
 	req_.set(http::field::host, host);
 	req_.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
 
@@ -46,6 +45,40 @@ void session::run(char const* host, char const* port, char const* target, int ve
 		beast::bind_front_handler(
 			&session::on_resolve,
 			shared_from_this()));
+}
+
+void session::get_list(std::string board_id)
+{
+	auto req = fmt::format("/1/boards/{}/lists{}", board_id, secrect_);
+	req_.target(req);
+	expected_response_ = ExpectedResponse::DISPLAY_LISTS;
+	// Send the HTTP request to the remote host
+	http::async_write(stream_, req_,
+		beast::bind_front_handler(
+			&session::on_write,
+			shared_from_this()));
+
+}
+
+void session::get_boards(std::string target)
+{
+	req_.target(target);
+	expected_response_ = ExpectedResponse::DISPLAY_BOARDS;
+	// Send the HTTP request to the remote host
+	http::async_write(stream_, req_,
+		beast::bind_front_handler(
+			&session::on_write,
+			shared_from_this()));
+
+}
+
+std::string session::select_board()
+{
+	fmt::print("Choose board: ");
+	int choice;
+	std::cin >> choice;
+	std::cin.get();
+	return boards_map.at(std::to_string(choice));
 }
 
 void session::on_resolve(beast::error_code ec, tcp::resolver::results_type results)
@@ -84,13 +117,6 @@ void session::on_handshake(beast::error_code ec)
 
 	// Set a timeout on the operation
 	beast::get_lowest_layer(stream_).expires_after(std::chrono::seconds(30));
-
-	expected_response_ = ExpectedResponse::DISPLAYBOARDS;
-	// Send the HTTP request to the remote host
-	http::async_write(stream_, req_,
-		beast::bind_front_handler(
-			&session::on_write,
-			shared_from_this()));
 }
 
 void session::on_write(beast::error_code ec, std::size_t bytes_transferred)
@@ -118,18 +144,22 @@ void session::on_read(
 
 	switch (expected_response_)
 	{
-	case session::ExpectedResponse::DISPLAYBOARDS:
+	case session::ExpectedResponse::DISPLAY_BOARDS:
 	{
 		// Write the message to standard out
 		//std::cout << res_ << std::endl;
 		tabulate::Table boards;
 		boards.add_row({ "ID", "Name" });
 
+		std::string board_id{};
+
 		nlohmann::json body = nlohmann::json::parse(res_.body());
 		for (auto i = 0; i < body.size(); ++i) {
 			//fmt::print("Name: {}\n", item.find("name").value()) ;
 			//fmt::print("ID: {}\n", item.find("id").value());
 			boards.add_row({ std::to_string(i), body[i].find("name").value() });
+			board_id = body[i].find("id").value();
+			boards_map.emplace(std::pair<std::string, std::string>(std::to_string(i), body[i].find("name").value()));
 		}
 
 		boards[0][0].format()
@@ -145,6 +175,10 @@ void session::on_read(
 		std::cout << boards << std::endl;
 		break;
 	}
+	case session::ExpectedResponse::DISPLAY_LISTS: {
+		std::cout << res_ << std::endl;
+		break;
+	}
 	default:
 		break;
 	}
@@ -153,11 +187,11 @@ void session::on_read(
 	// Set a timeout on the operation
 	beast::get_lowest_layer(stream_).expires_after(std::chrono::seconds(30));
 
-	// Gracefully close the stream
-	stream_.async_shutdown(
-		beast::bind_front_handler(
-			&session::on_shutdown,
-			shared_from_this()));
+	//// Gracefully close the stream
+	//stream_.async_shutdown(
+	//	beast::bind_front_handler(
+	//		&session::on_shutdown,
+	//		shared_from_this()));
 }
 
 void session::on_shutdown(beast::error_code ec)
