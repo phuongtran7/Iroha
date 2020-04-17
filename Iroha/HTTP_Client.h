@@ -5,8 +5,6 @@
 #include <boost/beast/ssl.hpp>
 #include <boost/beast/version.hpp>
 #include <boost/asio/strand.hpp>
-#include <cstdlib>
-#include <functional>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -14,37 +12,37 @@
 #include <nlohmann/json.hpp>
 #include <tabulate/table.hpp>
 #include <robin-hood-hashing/robin_hood.h>
+#include "yaml-cpp/yaml.h"
 
-// Performs an HTTP GET and prints the response
-class session : public std::enable_shared_from_this<session>
-{
+class Client {
 private:
-	enum class ExpectedResponse {
-		DISPLAY_BOARDS,
-		DISPLAY_LISTS,
-	};
 	boost::asio::ip::tcp::resolver resolver_;
 	boost::beast::ssl_stream<boost::beast::tcp_stream> stream_;
-	boost::beast::flat_buffer buffer_; // (Must persist between reads)
+	const std::string host_{"api.trello.com"};
+	const unsigned short port_{ 443 };
+	const unsigned short version_{ 11 };
 	boost::beast::http::request<boost::beast::http::empty_body> req_;
-	boost::beast::http::response<boost::beast::http::string_body> res_;
+	boost::beast::flat_buffer buffer_;
 	std::string secrect_;
-	ExpectedResponse expected_response_;
 	robin_hood::unordered_map<std::string, std::string> boards_map;
 
 private:
-	void fail(boost::beast::error_code ec, char const* what);
-	void on_resolve(boost::beast::error_code ec, boost::asio::ip::tcp::resolver::results_type results);
-	void on_connect(boost::beast::error_code ec, boost::asio::ip::tcp::resolver::results_type::endpoint_type);
-	void on_handshake(boost::beast::error_code ec);
-	void on_write(boost::beast::error_code ec, std::size_t bytes_transferred);
-	void on_read(boost::beast::error_code ec, std::size_t bytes_transferred);
-	void on_shutdown(boost::beast::error_code ec);
+	void make_secrect();
 
 public:
-	explicit session(boost::asio::executor ex, ssl::context& ctx, const std::string& secrect);
-	void run(char const* host, char const* port, int version);
-	void get_list(std::string board_id);
-	void get_boards(std::string target);
-	std::string select_board();
+	Client(boost::asio::executor ex, ssl::context& ctx);
+	~Client();
+
+	// Copy constructor
+	Client(const Client& other) = delete;
+	// Copy assignment
+	Client& operator=(const Client& other) = delete;
+	// Move constructor
+	Client(Client&& other) noexcept;
+	// Move assignment
+	Client& operator=(Client&& other) noexcept;
+
+	void init();
+	void make_request(const std::string& target);
+	void get_board();
 };
