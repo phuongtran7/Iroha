@@ -11,6 +11,8 @@
 #include <memory>
 #include <string>
 #include "fmt/format.h"
+#include <nlohmann/json.hpp>
+#include <tabulate/table.hpp>
 
 // Performs an HTTP GET and prints the response
 class session : public std::enable_shared_from_this<session>

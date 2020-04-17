@@ -121,8 +121,28 @@ void session::on_read(
 	case session::ExpectedResponse::DISPLAYBOARDS:
 	{
 		// Write the message to standard out
-		//std::cout << res_.body() << std::endl;
-		std::cout << res_ << std::endl;
+		//std::cout << res_ << std::endl;
+		tabulate::Table boards;
+		boards.add_row({ "Name", "ID" });
+
+		nlohmann::json body = nlohmann::json::parse(res_.body());
+		for (auto& item : body) {
+			//fmt::print("Name: {}\n", item.find("name").value()) ;
+			//fmt::print("ID: {}\n", item.find("id").value());
+			boards.add_row({ item.find("name").value(), item.find("id").value() });
+		}
+
+		boards[0][0].format()
+			.font_color(tabulate::Color::yellow)
+			.font_align(tabulate::FontAlign::center)
+			.font_style({ tabulate::FontStyle::bold });
+
+		boards[0][1].format()
+			.font_color(tabulate::Color::yellow)
+			.font_align(tabulate::FontAlign::center)
+			.font_style({ tabulate::FontStyle::bold });
+
+		std::cout << boards << std::endl;
 		break;
 	}
 	default:
