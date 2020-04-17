@@ -20,6 +20,9 @@ _deps
 *.userosscache
 *.sln.docstates
 
+# Config file
+*.yaml
+
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
