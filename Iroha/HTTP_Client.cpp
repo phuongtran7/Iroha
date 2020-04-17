@@ -9,7 +9,7 @@ using tcp = boost::asio::ip::tcp;       // from <boost/asio/ip/tcp.hpp>
 //------------------------------------------------------------------------------
 
 // Report a failure
-void fail(beast::error_code ec, char const* what)
+void session::fail(beast::error_code ec, char const* what)
 {
 	std::cerr << what << ": " << ec.message() << "\n";
 }
@@ -85,6 +85,7 @@ void session::on_handshake(beast::error_code ec)
 	// Set a timeout on the operation
 	beast::get_lowest_layer(stream_).expires_after(std::chrono::seconds(30));
 
+	expected_response_ = ExpectedResponse::DISPLAYBOARDS;
 	// Send the HTTP request to the remote host
 	http::async_write(stream_, req_,
 		beast::bind_front_handler(
@@ -115,8 +116,19 @@ void session::on_read(
 	if (ec)
 		return fail(ec, "read");
 
-	// Write the message to standard out
-	std::cout << res_.body() << std::endl;
+	switch (expected_response_)
+	{
+	case session::ExpectedResponse::DISPLAYBOARDS:
+	{
+		// Write the message to standard out
+		//std::cout << res_.body() << std::endl;
+		std::cout << res_ << std::endl;
+		break;
+	}
+	default:
+		break;
+	}
+
 
 	// Set a timeout on the operation
 	beast::get_lowest_layer(stream_).expires_after(std::chrono::seconds(30));
