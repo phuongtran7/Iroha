@@ -8,6 +8,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <string_view>
 #include "fmt/format.h"
 #include <nlohmann/json.hpp>
 #include <tabulate/table.hpp>
@@ -16,6 +17,12 @@
 
 class Client {
 private:
+	//Represent each item in Trello
+	// Either a board, a list or a card
+	struct Item {
+		std::string trello_id;
+		std::string name;
+	};
 	boost::asio::ip::tcp::resolver resolver_;
 	boost::beast::ssl_stream<boost::beast::tcp_stream> stream_;
 	const std::string host_{"api.trello.com"};
@@ -24,13 +31,17 @@ private:
 	boost::beast::http::request<boost::beast::http::empty_body> req_;
 	boost::beast::flat_buffer buffer_;
 	std::string secrect_;
-	robin_hood::unordered_map<std::string, std::string> boards_map_;
+	robin_hood::unordered_map<std::string, Item> boards_map_;
+	robin_hood::unordered_map<std::string, Item> lists_map_;
+	robin_hood::unordered_map<std::string, Item> cards_map_;
 
 private:
 	void make_secrect();
+	void init();
+	void make_request(const std::string& target);
 
 public:
-	Client(boost::asio::executor ex, ssl::context& ctx);
+	Client(boost::asio::io_context& ioc, ssl::context& ctx);
 	~Client();
 
 	// Copy constructor
@@ -42,7 +53,6 @@ public:
 	// Move assignment
 	Client& operator=(Client&& other) noexcept;
 
-	void init();
-	void make_request(const std::string& target);
-	void get_board();
+	void view_board(); // View all available board
+	void view_list(std::string_view board_id); // View lists in a particualar board
 };

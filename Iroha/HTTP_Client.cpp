@@ -1,10 +1,10 @@
 #include "HTTP_Client.h"
 
-namespace beast = boost::beast;         // from <boost/beast.hpp>
-namespace http = beast::http;           // from <boost/beast/http.hpp>
-namespace net = boost::asio;            // from <boost/asio.hpp>
-namespace ssl = boost::asio::ssl;       // from <boost/asio/ssl.hpp>
-using tcp = boost::asio::ip::tcp;       // from <boost/asio/ip/tcp.hpp>
+namespace beast = boost::beast;
+namespace http = beast::http;
+namespace net = boost::asio;
+namespace ssl = boost::asio::ssl;
+using tcp = boost::asio::ip::tcp;
 
 void Client::make_secrect()
 {
@@ -14,40 +14,6 @@ void Client::make_secrect()
 
 	// Prepend "?" if secrect is the only thing that need to append to URL else prepend "&"
 	secrect_ = fmt::format("key={}&token={}", key, token);
-}
-
-Client::Client(boost::asio::executor ex, ssl::context& ctx) :
-	resolver_{ ex },
-	stream_{ ex, ctx }
-{
-	make_secrect();
-	init();
-}
-
-Client::~Client()
-{
-}
-
-Client::Client(Client&& other) noexcept :
-	resolver_(std::move(other.resolver_)),
-	stream_(std::move(other.stream_)),
-	req_(std::move(other.req_)),
-	buffer_(std::move(other.buffer_)),
-	secrect_(std::move(other.secrect_)),
-	boards_map_(std::move(other.boards_map_))
-{
-}
-
-Client& Client::operator=(Client&& other) noexcept
-{
-	std::swap(resolver_, other.resolver_);
-	std::swap(stream_, other.stream_);
-	std::swap(req_, other.req_);
-	std::swap(buffer_, other.buffer_);
-	std::swap(secrect_, other.secrect_);
-	std::swap(boards_map_, other.boards_map_);
-
-	return *this;
 }
 
 void Client::init()
@@ -80,12 +46,49 @@ void Client::make_request(const std::string& target)
 	req_.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
 }
 
-void Client::get_board()
+Client::Client(boost::asio::io_context& ioc, ssl::context& ctx) :
+	resolver_{ ioc },
+	stream_{ ioc, ctx }
+{
+	make_secrect();
+	init();
+}
+
+Client::~Client()
+{
+}
+
+Client::Client(Client&& other) noexcept :
+	resolver_(std::move(other.resolver_)),
+	stream_(std::move(other.stream_)),
+	req_(std::move(other.req_)),
+	buffer_(std::move(other.buffer_)),
+	secrect_(std::move(other.secrect_)),
+	boards_map_(std::move(other.boards_map_))
+{
+}
+
+Client& Client::operator=(Client&& other) noexcept
+{
+	std::swap(resolver_, other.resolver_);
+	std::swap(stream_, other.stream_);
+	std::swap(req_, other.req_);
+	std::swap(buffer_, other.buffer_);
+	std::swap(secrect_, other.secrect_);
+	std::swap(boards_map_, other.boards_map_);
+
+	return *this;
+}
+
+void Client::view_board()
 {
 	http::response<http::string_body> res;
 
 	auto const target = fmt::format("/1/members/me/boards?fields=name&filter=open&{}", secrect_);
 	make_request(target);
+
+	// Send the HTTP request to the remote host
+	http::write(stream_, req_);
 
 	// Receive the HTTP response
 	http::read(stream_, buffer_, res);
@@ -99,7 +102,8 @@ void Client::get_board()
 	nlohmann::json body = nlohmann::json::parse(res.body());
 	for (auto i = 0; i < body.size(); ++i) {
 		boards.add_row({ std::to_string(i), body[i].find("name").value() });
-		boards_map_.emplace(std::pair<std::string, std::string>(std::to_string(i), body[i].find("name").value()));
+		Item board{ body[i].find("id").value() , body[i].find("name").value() };
+		boards_map_.emplace(std::pair<std::string, Item>(std::to_string(i), board));
 	}
 
 	boards[0][0].format()
@@ -113,4 +117,20 @@ void Client::get_board()
 		.font_style({ tabulate::FontStyle::bold });
 
 	std::cout << boards << std::endl;
+}
+
+void Client::view_list(std::string_view board_id)
+{
+	http::response<http::string_body> res;
+	auto const target = fmt::format("/1/boards/{}/lists?{}", secrect_);
+	make_request(target);
+
+	// Send the HTTP request to the remote host
+	http::write(stream_, req_);
+
+	// Receive the HTTP response
+	http::read(stream_, buffer_, res);
+
+	// Write the message to standard out
+	std::cout << res << std::endl;
 }
