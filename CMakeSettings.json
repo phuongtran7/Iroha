@@ -1,0 +1,122 @@
+﻿{
+  "configurations": [
+    {
+      "name": "x64-Clang-Debug",
+      "generator": "Ninja",
+      "configurationType": "Debug",
+      "buildRoot": "${projectDir}\\out\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "-v",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "clang_cl_x64" ],
+      "variables": [
+        {
+          "name": "CMAKE_C_COMPILER",
+          "value": "C:/Program Files/LLVM/bin/clang-cl.exe",
+          "type": "FILEPATH"
+        },
+        {
+          "name": "CMAKE_C_COMPILER_AR",
+          "value": "C:/Program Files/LLVM/bin/llvm-ar.exe",
+          "type": "FILEPATH"
+        },
+        {
+          "name": "CMAKE_C_COMPILER_RANLIB",
+          "value": "C:/Program Files/LLVM/bin/llvm-ranlib.exe",
+          "type": "FILEPATH"
+        },
+        {
+          "name": "CMAKE_CXX_COMPILER",
+          "value": "C:/Program Files/LLVM/bin/clang-cl.exe",
+          "type": "FILEPATH"
+        },
+        {
+          "name": "CMAKE_CXX_COMPILER_AR",
+          "value": "C:/Program Files/LLVM/bin/llvm-ar.exe",
+          "type": "FILEPATH"
+        },
+        {
+          "name": "CMAKE_CXX_COMPILER_RANLIB",
+          "value": "C:/Program Files/LLVM/bin/llvm-ranlib.exe",
+          "type": "FILEPATH"
+        },
+        {
+          "name": "CMAKE_LINKER",
+          "value": "C:/Program Files/LLVM/bin/lld-link.exe",
+          "type": "FILEPATH"
+        },
+        {
+          "name": "CMAKE_MAKE_PROGRAM",
+          "value": "C:/Program Files/Ninja/ninja.exe",
+          "type": "FILEPATH"
+        },
+        {
+          "name": "CMAKE_NM",
+          "value": "C:/Program Files/LLVM/bin/llvm-nm.exe",
+          "type": "FILEPATH"
+        }
+      ],
+      "cmakeExecutable": "C:/Program Files/CMake/bin/cmake.exe"
+    },
+    {
+      "name": "x64-Clang-Release",
+      "generator": "Ninja",
+      "configurationType": "RelWithDebInfo",
+      "buildRoot": "${projectDir}\\out\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "-v",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "clang_cl_x64" ],
+      "variables": [
+        {
+          "name": "CMAKE_C_COMPILER",
+          "value": "C:/Program Files/LLVM/bin/clang-cl.exe",
+          "type": "FILEPATH"
+        },
+        {
+          "name": "CMAKE_C_COMPILER_AR",
+          "value": "C:/Program Files/LLVM/bin/llvm-ar.exe",
+          "type": "FILEPATH"
+        },
+        {
+          "name": "CMAKE_C_COMPILER_RANLIB",
+          "value": "C:/Program Files/LLVM/bin/llvm-ranlib.exe",
+          "type": "FILEPATH"
+        },
+        {
+          "name": "CMAKE_CXX_COMPILER",
+          "value": "C:/Program Files/LLVM/bin/clang-cl.exe",
+          "type": "FILEPATH"
+        },
+        {
+          "name": "CMAKE_CXX_COMPILER_AR",
+          "value": "C:/Program Files/LLVM/bin/llvm-ar.exe",
+          "type": "FILEPATH"
+        },
+        {
+          "name": "CMAKE_CXX_COMPILER_RANLIB",
+          "value": "C:/Program Files/LLVM/bin/llvm-ranlib.exe",
+          "type": "FILEPATH"
+        },
+        {
+          "name": "CMAKE_LINKER",
+          "value": "C:/Program Files/LLVM/bin/lld-link.exe",
+          "type": "FILEPATH"
+        },
+        {
+          "name": "CMAKE_MAKE_PROGRAM",
+          "value": "C:/Program Files/Ninja/ninja.exe",
+          "type": "FILEPATH"
+        },
+        {
+          "name": "CMAKE_NM",
+          "value": "C:/Program Files/LLVM/bin/llvm-nm.exe",
+          "type": "FILEPATH"
+        }
+      ],
+      "cmakeExecutable": "C:/Program Files/CMake/bin/cmake.exe"
+    }
+  ]
+}
