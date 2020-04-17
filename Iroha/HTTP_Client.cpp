@@ -123,13 +123,13 @@ void session::on_read(
 		// Write the message to standard out
 		//std::cout << res_ << std::endl;
 		tabulate::Table boards;
-		boards.add_row({ "Name", "ID" });
+		boards.add_row({ "ID", "Name" });
 
 		nlohmann::json body = nlohmann::json::parse(res_.body());
-		for (auto& item : body) {
+		for (auto i = 0; i < body.size(); ++i) {
 			//fmt::print("Name: {}\n", item.find("name").value()) ;
 			//fmt::print("ID: {}\n", item.find("id").value());
-			boards.add_row({ item.find("name").value(), item.find("id").value() });
+			boards.add_row({ std::to_string(i), body[i].find("name").value() });
 		}
 
 		boards[0][0].format()
