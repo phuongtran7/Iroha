@@ -24,7 +24,7 @@ private:
 	boost::beast::http::request<boost::beast::http::empty_body> req_;
 	boost::beast::flat_buffer buffer_;
 	std::string secrect_;
-	robin_hood::unordered_map<std::string, std::string> boards_map;
+	robin_hood::unordered_map<std::string, std::string> boards_map_;
 
 private:
 	void make_secrect();

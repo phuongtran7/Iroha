@@ -18,7 +18,7 @@ void Client::make_secrect()
 
 Client::Client(boost::asio::executor ex, ssl::context& ctx) :
 	resolver_{ ex },
-	stream_{ex, ctx}
+	stream_{ ex, ctx }
 {
 	make_secrect();
 	init();
@@ -26,6 +26,28 @@ Client::Client(boost::asio::executor ex, ssl::context& ctx) :
 
 Client::~Client()
 {
+}
+
+Client::Client(Client&& other) noexcept :
+	resolver_(std::move(other.resolver_)),
+	stream_(std::move(other.stream_)),
+	req_(std::move(other.req_)),
+	buffer_(std::move(other.buffer_)),
+	secrect_(std::move(other.secrect_)),
+	boards_map_(std::move(other.boards_map_))
+{
+}
+
+Client& Client::operator=(Client&& other) noexcept
+{
+	std::swap(resolver_, other.resolver_);
+	std::swap(stream_, other.stream_);
+	std::swap(req_, other.req_);
+	std::swap(buffer_, other.buffer_);
+	std::swap(secrect_, other.secrect_);
+	std::swap(boards_map_, other.boards_map_);
+
+	return *this;
 }
 
 void Client::init()
@@ -77,7 +99,7 @@ void Client::get_board()
 	nlohmann::json body = nlohmann::json::parse(res.body());
 	for (auto i = 0; i < body.size(); ++i) {
 		boards.add_row({ std::to_string(i), body[i].find("name").value() });
-		boards_map.emplace(std::pair<std::string, std::string>(std::to_string(i), body[i].find("name").value()));
+		boards_map_.emplace(std::pair<std::string, std::string>(std::to_string(i), body[i].find("name").value()));
 	}
 
 	boards[0][0].format()
