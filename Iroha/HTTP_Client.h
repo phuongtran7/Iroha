@@ -68,6 +68,8 @@ public:
 	bool update_list(const std::string& list_id, std::string& new_name);
 	bool update_card(const std::string& card_id, std::string& new_name, std::string& new_desc);
 
+	bool close(const std::string& id);
+
 	bool get_user_input();
 	void display_help();
 };

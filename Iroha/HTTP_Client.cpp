@@ -485,7 +485,7 @@ bool Client::update_card(const std::string& card_id, std::string& new_name, std:
 	auto card = cards_map_.find(card_id);
 
 	if (card == cards_map_.end()) {
-		fmt::print("Update card failed. Cannot find board with ID: {}\n", card_id);
+		fmt::print("Update card failed. Cannot find card with ID: {}\n", card_id);
 		return false;
 	}
 
@@ -517,13 +517,79 @@ bool Client::update_card(const std::string& card_id, std::string& new_name, std:
 	return true;
 }
 
+bool Client::close(const std::string& id)
+{
+	auto count = boost::count(id, '-');
+	std::string target{};
+
+	if (count == 0) {
+		// Only board ID
+		auto board = boards_map_.find(id);
+
+		if (board == boards_map_.end()) {
+			fmt::print("Close board failed. Cannot find board with ID: {}\n", id);
+			return false;
+		}
+		target = fmt::format("/1/boards/{}?closed=true&{}", board->second.trello_id, secrect_);
+	}
+	else if (count == 1) {
+		// List ID
+		auto list = lists_map_.find(id);
+
+		if (list == lists_map_.end()) {
+			fmt::print("Close list failed. Cannot find list with ID: {}\n", id);
+			return false;
+		}
+		target = fmt::format("/1/lists/{}?closed=true&{}", list->second.trello_id, secrect_);
+	}
+	else if (count == 2) {
+		// Card ID
+		auto card = cards_map_.find(id);
+
+		if (card == cards_map_.end()) {
+			fmt::print("Close card failed. Cannot find card with ID: {}\n", id);
+			return false;
+		}
+		target = fmt::format("/1/cards/{}?closed=true&{}", card->second.trello_id, secrect_);
+	}
+
+	http::response<http::string_body> res;
+
+	make_request(http::verb::put, target);
+
+	// Send the HTTP request to the remote host
+	http::write(stream_, req_);
+
+	// Receive the HTTP response
+	http::read(stream_, buffer_, res);
+
+	if (res.result() != http::status::ok) {
+		fmt::print("Close failed: {}: {}\n", res.result_int(), res.reason().to_string());
+		return false;
+	}
+
+	if (count == 0) {
+		view_board();
+	}
+	else if (count == 1) {
+		view_list(id.substr(0, 1));
+	}
+	else if (count == 2) {
+		view_card(id.substr(0, 3));
+	}
+
+	return true;
+}
+
 bool Client::get_user_input()
 {
 	// Command:
 	// view [ID]
 	// create [ID]
 	// update [ID]
+	// close [ID]
 	// quit
+	// help
 
 	// ID in the format of [board]-[list]-[card]
 	// For example the 2 card of list 1 and board 0 will be 0-1-2
@@ -616,6 +682,14 @@ bool Client::get_user_input()
 			update_board(results[1], input);
 		}
 	}
+	else if (results.front() == "close") {
+		if (results.size() < 2) {
+			fmt::print("Please enter the ID of the item.\n");
+		}
+		else {
+			close(results[1]);
+		}
+	}
 	else if (results.front() == "quit" || results.front() == "q") {
 		return false;
 	}
@@ -624,17 +698,38 @@ bool Client::get_user_input()
 		return true;
 	}
 
-
-
 	return true;
 }
 
 void Client::display_help()
 {
-	fmt::print("Available commands:\n");
-	fmt::print("view [ID]\n");
-	fmt::print("create [ID]\n");
-	fmt::print("update [ID]\n");
-	fmt::print("quit\n");
-	fmt::print("help\n");
+	tabulate::Table header;
+	header.add_row({ "Available Commands" });
+	header[0][0].format()
+		.font_color(tabulate::Color::green)
+		.font_align(tabulate::FontAlign::center)
+		.font_style({ tabulate::FontStyle::bold });
+
+
+	tabulate::Table items;
+	items.add_row({ "Name", "Description" });
+
+	items.add_row({ "view [ID]" , "Display Boards/Lists/Cards" });
+	items.add_row({ "create [ID]" , "Create new Boards/Lists/Cards" });
+	items.add_row({ "update [ID]" , "Update Boards/Lists/Cards" });
+	items.add_row({ "close [ID]" , "Close Boards/Lists/Cards" });
+	items.add_row({ "quit [ID]" , "Quit the application" });
+	items.add_row({ "help [ID]" , "Display available commands" });
+
+	for (auto i = 0; i < 2; i++) {
+		// Center all the collumns of the first row
+		items[0][i].format()
+			.font_align(tabulate::FontAlign::center)
+			.font_style({ tabulate::FontStyle::bold });
+	}
+
+	header.add_row({ items });
+	header[1].format().hide_border_top();
+
+	std::cout << header << std::endl;
 }
