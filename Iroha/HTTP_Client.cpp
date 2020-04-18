@@ -619,6 +619,22 @@ bool Client::get_user_input()
 	else if (results.front() == "quit" || results.front() == "q") {
 		return false;
 	}
+	else if (results.front() == "help" || results.front() == "h") {
+		display_help();
+		return true;
+	}
+
+
 
 	return true;
+}
+
+void Client::display_help()
+{
+	fmt::print("Available commands:\n");
+	fmt::print("view [ID]\n");
+	fmt::print("create [ID]\n");
+	fmt::print("update [ID]\n");
+	fmt::print("quit\n");
+	fmt::print("help\n");
 }

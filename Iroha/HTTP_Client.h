@@ -69,4 +69,5 @@ public:
 	bool update_card(const std::string& card_id, std::string& new_name, std::string& new_desc);
 
 	bool get_user_input();
+	void display_help();
 };
