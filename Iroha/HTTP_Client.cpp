@@ -66,6 +66,18 @@ Client::Client(boost::asio::io_context& ioc, ssl::context& ctx) :
 
 Client::~Client()
 {
+	// Gracefully close the stream
+	beast::error_code ec;
+	stream_.shutdown(ec);
+	if (ec == net::error::eof)
+	{
+		// Rationale:
+		// http://stackoverflow.com/questions/25587403/boost-asio-ssl-async-shutdown-always-finishes-with-an-error
+		ec = {};
+	}
+	if (ec) {
+		throw beast::system_error{ ec };
+	}
 }
 
 Client::Client(Client&& other) noexcept :
