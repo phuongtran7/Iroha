@@ -322,9 +322,9 @@ bool Client::create_board(std::string& name)
 bool Client::create_list(const std::string& board_id, std::string& name)
 {
 	// Find the Trello ID that the list is in
-	auto trello_id = boards_map_.find(board_id);
+	auto list = boards_map_.find(board_id);
 
-	if (trello_id == boards_map_.end()) {
+	if (list == boards_map_.end()) {
 		fmt::print("Create list failed. Cannot find board with ID: {}\n", board_id);
 		return false;
 	}
@@ -334,7 +334,7 @@ bool Client::create_list(const std::string& board_id, std::string& name)
 	// Replace all space in name with HTML code
 	boost::replace_all(name, " ", "+");
 
-	auto const target = fmt::format("/1/lists?name={}&idBoard={}&{}", name, trello_id->second.trello_id, secrect_);
+	auto const target = fmt::format("/1/lists?name={}&idBoard={}&{}", name, list->second.trello_id, secrect_);
 	make_request(http::verb::post, target);
 
 	// Send the HTTP request to the remote host
@@ -359,9 +359,9 @@ bool Client::create_list(const std::string& board_id, std::string& name)
 bool Client::create_card(const std::string& list_id, std::string& name)
 {
 	// Find the Trello ID of the list that the card is in
-	auto trello_id = lists_map_.find(list_id);
+	auto card = lists_map_.find(list_id);
 
-	if (trello_id == lists_map_.end()) {
+	if (card == lists_map_.end()) {
 		fmt::print("Create card failed. Cannot find list with ID: {}\n", list_id);
 		return false;
 	}
@@ -371,7 +371,7 @@ bool Client::create_card(const std::string& list_id, std::string& name)
 	// Replace all space in name with HTML code
 	boost::replace_all(name, " ", "+");
 
-	auto const target = fmt::format("/1/cards?name={}&idList={}&{}", name, trello_id->second.trello_id, secrect_);
+	auto const target = fmt::format("/1/cards?name={}&idList={}&{}", name, card->second.trello_id, secrect_);
 	make_request(http::verb::post, target);
 
 	// Send the HTTP request to the remote host
@@ -389,6 +389,43 @@ bool Client::create_card(const std::string& list_id, std::string& name)
 	//std::cout << res << std::endl;
 
 	view_card(list_id);
+
+	return true;
+}
+
+bool Client::update_board(const std::string& board_id, std::string& new_name)
+{
+	// Find the Trello ID that the list is in
+	auto board = boards_map_.find(board_id);
+
+	if (board == boards_map_.end()) {
+		fmt::print("Update board failed. Cannot find board with ID: {}\n", board_id);
+		return false;
+	}
+
+	http::response<http::string_body> res;
+
+	// Replace all space in name with HTML code
+	boost::replace_all(new_name, " ", "+");
+
+	auto const target = fmt::format("/1/boards/{}?name={}&{}", board->second.trello_id, new_name, secrect_);
+	make_request(http::verb::put, target);
+
+	// Send the HTTP request to the remote host
+	http::write(stream_, req_);
+
+	// Receive the HTTP response
+	http::read(stream_, buffer_, res);
+
+	if (res.result() != http::status::ok) {
+		fmt::print("Update board failed: {}: {}\n", res.result_int(), res.reason().to_string());
+		return false;
+	}
+
+	// Write the message to standard out
+	//std::cout << res << std::endl;
+
+	view_board();
 
 	return true;
 }

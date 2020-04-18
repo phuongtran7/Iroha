@@ -17,8 +17,8 @@ int main()
     Client client{ioc, ctx};
 
     client.view_board();
-    client.view_list("2");
-    client.view_card("2-0");
+    //client.view_list("2");
+    //client.view_card("2-0");
 
     //std::string new_board{ "Iroha" };
     //client.create_board(new_board);
@@ -26,8 +26,12 @@ int main()
     //std::string new_list{ "Test list" };
     //client.create_list("2", new_list);
 
-    std::string new_card{ " Never accept the world as it appears to be, dare to see it for what it could be" };
-    client.create_card("2-0", new_card);
+    //std::string new_card{ " Never accept the world as it appears to be, dare to see it for what it could be" };
+    //client.create_card("2-0", new_card);
+
+    //std::string new_name{ "Isshiki Iroha" };
+    //client.update_board("2", new_name);
+
     std::getchar();
 	return 0;
 }
