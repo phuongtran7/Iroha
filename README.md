@@ -10,7 +10,7 @@
 ### How To Build
 
 1. Install all dependencies with Microsoft's [vcpkg](https://github.com/Microsoft/vcpkg).
-    * `vcpkg install boost-asio`
+    * `vcpkg install boost-beast`
     * `vcpkg install fmt`
     * `vcpkg install yaml-cpp`
     * `vcpkg install openssl`
