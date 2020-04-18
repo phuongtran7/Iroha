@@ -58,9 +58,12 @@ public:
 	void view_board(); // View all available board
 	void view_list(const std::string& board_id); // View lists in a particualar board
 	void view_card(const std::string& list_id); // View cards in list
+
 	bool create_board(std::string& name);
 	bool create_list(const std::string& board_id, std::string& name);
 	bool create_card(const std::string& list_id, std::string& name);
+
 	bool update_board(const std::string& board_id, std::string& new_name);
 	bool update_list(const std::string& list_id, std::string& new_name);
+	bool update_card(const std::string& card_id, std::string& new_name, std::string& new_desc);
 };

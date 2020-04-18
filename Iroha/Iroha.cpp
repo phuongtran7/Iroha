@@ -18,7 +18,7 @@ int main()
 
     client.view_board();
     client.view_list("2");
-    //client.view_card("2-0");
+    client.view_card("2-0");
 
     //std::string new_board{ "Iroha" };
     //client.create_board(new_board);
@@ -34,6 +34,10 @@ int main()
 
     //std::string new_name{ "Test List New" };
     //client.update_list("2-0", new_name);
+
+    //std::string new_name{ "Heroes never die" };
+    //std::string new_desc{""};
+    //client.update_card("2-0-0", new_name, new_desc);
 
     std::getchar();
 	return 0;
