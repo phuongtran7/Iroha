@@ -26,6 +26,8 @@ cmake -DCMAKE_TOOLCHAIN_FILE=path/to/vcpkg.cmake ..
 cmake --build .
 ```
 
+`Iroha` also uses [tabulate](https://github.com/p-ranav/tabulate) and [robin-hood-hashing](https://github.com/martinus/robin-hood-hashing). However, due to the nature of these libraries, they are all kept inside the `include` folder.
+
 ### Usage
 
 Iroha currently only support five main commands for now:
