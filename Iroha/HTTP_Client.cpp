@@ -34,16 +34,17 @@ void Client::init()
 
 	// Perform the SSL handshake
 	stream_.handshake(ssl::stream_base::client);
-}
 
-void Client::make_request(const std::string& target)
-{
 	// Set up an HTTP GET request message
 	req_.version(version_);
-	req_.method(http::verb::get);
-	req_.target(target);
 	req_.set(http::field::host, host_);
 	req_.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
+}
+
+void Client::make_request(http::verb type, const std::string& target)
+{
+	req_.method(type);
+	req_.target(target);
 }
 
 std::string Client::trim_to_new_line(const std::string& input)
@@ -94,7 +95,7 @@ void Client::view_board()
 	http::response<http::string_body> res;
 
 	auto const target = fmt::format("/1/members/me/boards?fields=name&filter=open&{}", secrect_);
-	make_request(target);
+	make_request(http::verb::get, target);
 
 	// Send the HTTP request to the remote host
 	http::write(stream_, req_);
@@ -146,7 +147,7 @@ void Client::view_list(const std::string& board_id)
 
 	http::response<http::string_body> res;
 	auto const target = fmt::format("/1/boards/{}/lists?{}", board.trello_id, secrect_);
-	make_request(target);
+	make_request(http::verb::get, target);
 
 	// Send the HTTP request to the remote host
 	http::write(stream_, req_);
@@ -198,7 +199,7 @@ void Client::view_card(const std::string& list_id)
 	
 	// Currently only need to get id, name and desciption of a card
 	auto const target = fmt::format("/1/lists/{}/cards?fields=name,desc,id&{}", list.trello_id, secrect_);
-	make_request(target);
+	make_request(http::verb::get, target);
 
 	// Send the HTTP request to the remote host
 	http::write(stream_, req_);

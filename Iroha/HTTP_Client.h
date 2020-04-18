@@ -38,7 +38,7 @@ private:
 private:
 	void make_secrect();
 	void init();
-	void make_request(const std::string& target);
+	void make_request(boost::beast::http::verb type, const std::string& target);
 	std::string trim_to_new_line(const std::string& input);
 
 public:
