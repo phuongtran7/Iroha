@@ -72,8 +72,8 @@ void Client::create_help_table()
 	items.add_row({ "create [ID]" , "Create new Boards/Lists/Cards" });
 	items.add_row({ "update [ID]" , "Update Boards/Lists/Cards" });
 	items.add_row({ "close [ID]" , "Close Boards/Lists/Cards" });
-	items.add_row({ "quit [ID]" , "Quit the application" });
-	items.add_row({ "help [ID]" , "Display available commands" });
+	items.add_row({ "quit or q" , "Quit the application" });
+	items.add_row({ "help or h" , "Display available commands" });
 
 	for (auto i = 0; i < 2; i++) {
 		// Center all the collumns of the first row
