@@ -17,7 +17,7 @@ int main()
     Client client{ioc, ctx};
 
     client.view_board();
-    //client.view_list("2");
+    client.view_list("2");
     //client.view_card("2-0");
 
     //std::string new_board{ "Iroha" };
@@ -31,6 +31,9 @@ int main()
 
     //std::string new_name{ "Isshiki Iroha" };
     //client.update_board("2", new_name);
+
+    //std::string new_name{ "Test List New" };
+    //client.update_list("2-0", new_name);
 
     std::getchar();
 	return 0;
