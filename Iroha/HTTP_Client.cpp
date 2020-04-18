@@ -98,18 +98,9 @@ Client::Client(boost::asio::io_context& ioc, ssl::context& ctx) :
 
 Client::~Client()
 {
-	// Gracefully close the stream
+	// Gracefully close the stream. Ignore all error.
 	beast::error_code ec;
 	stream_.shutdown(ec);
-	if (ec == net::error::eof)
-	{
-		// Rationale:
-		// http://stackoverflow.com/questions/25587403/boost-asio-ssl-async-shutdown-always-finishes-with-an-error
-		ec = {};
-	}
-	if (ec) {
-		//throw beast::system_error{ ec };
-	}
 }
 
 Client::Client(Client&& other) noexcept :
@@ -617,17 +608,6 @@ bool Client::close(const std::string& id)
 
 bool Client::get_user_input()
 {
-	// Command:
-	// view [ID]
-	// create [ID]
-	// update [ID]
-	// close [ID]
-	// quit
-	// help
-
-	// ID in the format of [board]-[list]-[card]
-	// For example the 2 card of list 1 and board 0 will be 0-1-2
-
 	using namespace boost::algorithm;
 
 	fmt::print("Action: ");
