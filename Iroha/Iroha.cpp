@@ -16,9 +16,9 @@ int main()
 
     Client client{ioc, ctx};
 
-    client.view_board();
-    client.view_list("2");
-    client.view_card("2-0");
+    //client.view_board();
+    //client.view_list("2");
+    //client.view_card("2-0");
 
     //std::string new_board{ "Iroha" };
     //client.create_board(new_board);
@@ -39,6 +39,11 @@ int main()
     //std::string new_desc{""};
     //client.update_card("2-0-0", new_name, new_desc);
 
-    std::getchar();
+    auto running = true;
+
+    while (running) {
+        running = client.get_user_input();
+    }
+
 	return 0;
 }

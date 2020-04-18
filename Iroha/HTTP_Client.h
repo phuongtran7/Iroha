@@ -6,6 +6,7 @@
 #include <boost/beast/version.hpp>
 #include <boost/asio/strand.hpp>
 #include <boost/algorithm/string.hpp> 
+#include <boost/range/algorithm/count.hpp>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -66,4 +67,6 @@ public:
 	bool update_board(const std::string& board_id, std::string& new_name);
 	bool update_list(const std::string& list_id, std::string& new_name);
 	bool update_card(const std::string& card_id, std::string& new_name, std::string& new_desc);
+
+	bool get_user_input();
 };

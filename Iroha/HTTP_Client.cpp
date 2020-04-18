@@ -504,3 +504,109 @@ bool Client::update_card(const std::string& card_id, std::string& new_name, std:
 
 	return true;
 }
+
+bool Client::get_user_input()
+{
+	// Command:
+	// view [ID]
+	// create [ID]
+	// update [ID]
+	// quit
+
+	// ID in the format of [board]-[list]-[card]
+	// For example the 2 card of list 1 and board 0 will be 0-1-2
+
+	using namespace boost::algorithm;
+
+	fmt::print("Action: ");
+	std::string input{};
+	std::getline(std::cin, input);
+	std::vector<std::string> results;
+	split(results, input, is_space());
+
+	if (results.empty()) {
+		// Still continue until user enter exit
+		return true;
+	}
+
+	if (results.front() == "view") {
+		if (results.size() != 1) {
+			if (contains(results[1], "-")) {
+				view_card(results[1]);
+			}
+			else {
+				view_list(results[1]);
+			}
+		}
+		else {
+			view_board();
+		}
+	}
+	else if (results.front() == "create") {
+		if (results.size() != 1) {
+			if (contains(results[1], "-")) {
+				// Create new card
+				fmt::print("New Card name:\n");
+				std::string input{};
+				std::getline(std::cin, input);
+
+				create_card(results[1], input);
+			}
+			else {
+				// Create new list
+				fmt::print("New List name:\n");
+				std::string input{};
+				std::getline(std::cin, input);
+
+				create_list(results[1], input);
+			}
+		}
+		else {
+			// Create new board
+			fmt::print("New Board name:\n");
+			std::string input{};
+			std::getline(std::cin, input);
+
+			create_board(input);
+		}
+	}
+	else if (results.front() == "update") {
+		if (results.size() != 1) {
+			if (contains(results[1], "-")) {
+				if (boost::count(results[1], '-') > 1) {
+					// Update card
+					fmt::print("New Card name:\n");
+					std::string name_input{};
+					std::getline(std::cin, name_input);
+
+					fmt::print("New Card description:\n");
+					std::string desc_input{};
+					std::getline(std::cin, desc_input);
+
+					update_card(results[1], name_input, desc_input);
+				}
+				else {
+					// Update list
+					fmt::print("New List name:\n");
+					std::string input{};
+					std::getline(std::cin, input);
+
+					update_list(results[1], input);
+				}
+			}
+		}
+		else {
+			// Update board
+			fmt::print("New Board name:\n");
+			std::string input{};
+			std::getline(std::cin, input);
+
+			update_board(results[1], input);
+		}
+	}
+	else if (results.front() == "quit" || results.front() == "q") {
+		return false;
+	}
+
+	return true;
+}
