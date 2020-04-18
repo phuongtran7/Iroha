@@ -17,10 +17,11 @@ int main()
     Client client{ioc, ctx};
 
     client.view_board();
-    client.view_list("2");
-    client.view_card("2-2");
+    //client.view_list("2");
+    //client.view_card("2-2");
 
-    client.create_board("Iroha");
+    //client.create_board("Iroha");
+    client.create_list("2", "Test list");
 
     std::getchar();
 	return 0;

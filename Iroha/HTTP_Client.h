@@ -5,6 +5,7 @@
 #include <boost/beast/ssl.hpp>
 #include <boost/beast/version.hpp>
 #include <boost/asio/strand.hpp>
+#include <boost/algorithm/string.hpp> 
 #include <iostream>
 #include <memory>
 #include <string>
@@ -57,5 +58,6 @@ public:
 	void view_board(); // View all available board
 	void view_list(const std::string& board_id); // View lists in a particualar board
 	void view_card(const std::string& list_id); // View cards in list
-	bool create_board(const std::string& name);
+	bool create_board(std::string name);
+	bool create_list(const std::string& board_id, std::string name);
 };

@@ -261,7 +261,7 @@ void Client::view_card(const std::string& list_id)
 	std::cout << header << std::endl;
 }
 
-bool Client::create_board(const std::string& name)
+bool Client::create_board(std::string name)
 {
 	// Check whether the board is already created
 	for (auto& board : boards_map_) {
@@ -272,6 +272,10 @@ bool Client::create_board(const std::string& name)
 	}
 
 	http::response<http::string_body> res;
+
+	// Replace all space in name with HTML code
+	boost::replace_all(name, " ", "+");
+
 	auto const target = fmt::format("/1/boards/?name={}&defaultLists=false&{}", name, secrect_);
 	make_request(http::verb::post, target);
 
@@ -291,6 +295,45 @@ bool Client::create_board(const std::string& name)
 
 	// Due to the response sorts the board name, so we have to make another request to get the correct ID
 	view_board();
+
+	return true;
+}
+
+bool Client::create_list(const std::string& board_id, std::string name)
+{
+	// Check whether the list is already created
+	for (auto& list : lists_map_) {
+		if (name == list.second.name) {
+			fmt::print("There is already a list named [{}]\n", name);
+			return false;
+		}
+	}
+
+	auto trello_id = boards_map_.find(board_id)->second.trello_id;
+
+	http::response<http::string_body> res;
+
+	// Replace all space in name with HTML code
+	boost::replace_all(name, " ", "+");
+
+	auto const target = fmt::format("/1/lists?name={}&idBoard={}&{}", name, trello_id, secrect_);
+	make_request(http::verb::post, target);
+
+	// Send the HTTP request to the remote host
+	http::write(stream_, req_);
+
+	// Receive the HTTP response
+	http::read(stream_, buffer_, res);
+
+	if (res.result() != http::status::ok) {
+		fmt::print("Create list failed: {}: {}\n", res.result_int(), res.reason().to_string());
+		return false;
+	}
+
+	// Write the message to standard out
+	//std::cout << res << std::endl;
+
+	view_list(board_id);
 
 	return true;
 }
