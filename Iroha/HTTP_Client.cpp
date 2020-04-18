@@ -46,6 +46,15 @@ void Client::make_request(const std::string& target)
 	req_.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
 }
 
+std::string Client::trim_to_new_line(const std::string& input)
+{
+	if (input.empty()) {
+		return std::string{};
+	}
+	std::size_t pos = input.find("\n");
+	return fmt::format("{}...", input.substr(0, pos));
+}
+
 Client::Client(boost::asio::io_context& ioc, ssl::context& ctx) :
 	resolver_{ ioc },
 	stream_{ ioc, ctx }
@@ -105,16 +114,16 @@ void Client::view_board()
 
 
 	tabulate::Table boards;
-	boards.add_row({ "ID", "Name", "Trello ID"});
+	boards.add_row({ "ID", "Name" });
 
 	nlohmann::json body = nlohmann::json::parse(res.body());
 	for (auto i = 0; i < body.size(); ++i) {
-		boards.add_row({ std::to_string(i), body[i].find("name").value(), body[i].find("id").value() });
+		boards.add_row({ std::to_string(i), body[i].find("name").value() });
 		Item board{ body[i].find("id").value() , body[i].find("name").value() };
 		boards_map_.emplace(std::to_string(i), board);
 	}
 
-	for (auto i = 0; i < 3; i++) {
+	for (auto i = 0; i < 2; i++) {
 		// Center all the collumns of the first row
 		boards[0][i].format()
 			// For some reason if embedded inside another table
@@ -156,25 +165,84 @@ void Client::view_list(const std::string& board_id)
 		.font_style({ tabulate::FontStyle::bold });
 
 
-	tabulate::Table boards;
-	boards.add_row({ "ID", "Name", "Trello ID" });
+	tabulate::Table lists;
+	lists.add_row({ "ID", "Name" });
 
 	nlohmann::json body = nlohmann::json::parse(res.body());
 	for (auto i = 0; i < body.size(); ++i) {
 		auto list_id = fmt::format("{}-{}", board_id, i); // Prepend the user-friendly board ID
-		boards.add_row({ list_id, body[i].find("name").value(), body[i].find("id").value() });
-		Item board{ body[i].find("id").value() , body[i].find("name").value() };
-		boards_map_.emplace(std::to_string(i), board);
+		lists.add_row({ list_id, body[i].find("name").value() });
+		Item list{ body[i].find("id").value() , body[i].find("name").value() };
+		lists_map_.emplace(list_id, list);
 	}
 
-	for (auto i = 0; i < 3; i++) {
+	for (auto i = 0; i < 2; i++) {
 		// Center all the collumns of the first row
-		boards[0][i].format()
+		lists[0][i].format()
 			.font_align(tabulate::FontAlign::center)
 			.font_style({ tabulate::FontStyle::bold });
 	}
 
-	header.add_row({ boards });
+	header.add_row({ lists });
+	header[1].format().hide_border_top();
+
+	std::cout << header << std::endl;
+}
+
+void Client::view_card(const std::string& list_id)
+{
+	// Search for trello ID using user-friendly board ID
+	auto list = lists_map_.find(list_id)->second;
+
+	http::response<http::string_body> res;
+	
+	// Currently only need to get id, name and desciption of a card
+	auto const target = fmt::format("/1/lists/{}/cards?fields=name,desc,id&{}", list.trello_id, secrect_);
+	make_request(target);
+
+	// Send the HTTP request to the remote host
+	http::write(stream_, req_);
+
+	// Receive the HTTP response
+	http::read(stream_, buffer_, res);
+
+	// Write the message to standard out
+	//std::cout << res << std::endl;
+
+	tabulate::Table header;
+	header.add_row({ "Cards" });
+	header[0][0].format()
+		.font_color(tabulate::Color::green)
+		.font_align(tabulate::FontAlign::center)
+		.font_style({ tabulate::FontStyle::bold });
+
+
+	tabulate::Table cards;
+	cards.add_row({ "ID", "Name", "Description" });
+
+	nlohmann::json body = nlohmann::json::parse(res.body());
+	for (auto i = 0; i < body.size(); ++i) {
+		auto card_id = fmt::format("{}-{}", list_id, i); // Prepend the user-friendly list ID
+		auto desc = body[i].find("desc").value();
+		cards.add_row({ card_id, body[i].find("name").value(), trim_to_new_line(desc) });
+		Item card{ body[i].find("id").value() , body[i].find("name").value() };
+		cards_map_.emplace(card_id, card);
+	}
+
+	for (auto i = 0; i < body.size(); i++) {
+		// Force fixed size on name and desc column
+		cards[i][1].format().width(25);
+		cards[i][2].format().width(50);
+	}
+
+	for (auto i = 0; i < 3; i++) {
+		// Center all the collumns of the first row
+		cards[0][i].format()
+			.font_align(tabulate::FontAlign::center)
+			.font_style({ tabulate::FontStyle::bold });
+	}
+
+	header.add_row({ cards });
 	header[1].format().hide_border_top();
 
 	std::cout << header << std::endl;

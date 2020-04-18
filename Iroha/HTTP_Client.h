@@ -39,6 +39,7 @@ private:
 	void make_secrect();
 	void init();
 	void make_request(const std::string& target);
+	std::string trim_to_new_line(const std::string& input);
 
 public:
 	Client(boost::asio::io_context& ioc, ssl::context& ctx);
@@ -55,4 +56,5 @@ public:
 
 	void view_board(); // View all available board
 	void view_list(const std::string& board_id); // View lists in a particualar board
+	void view_card(const std::string& list_id); // View cards in list
 };
