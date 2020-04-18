@@ -289,41 +289,8 @@ bool Client::create_board(const std::string& name)
 	// Write the message to standard out
 	//std::cout << res << std::endl;
 
-	// Add the new board to boards_map_
-	nlohmann::json body = nlohmann::json::parse(res.body());
-	Item board{ body.find("id").value() , body.find("name").value() };
-	auto current_size = std::to_string(boards_map_.size());
-	boards_map_.emplace(current_size, board);
-
-	tabulate::Table header;
-	header.add_row({ "Boards" });
-	header[0][0].format()
-		.font_color(tabulate::Color::green)
-		.font_align(tabulate::FontAlign::center)
-		.font_style({ tabulate::FontStyle::bold });
-
-
-	tabulate::Table boards;
-	boards.add_row({ "ID", "Name" });
-
-	for (auto i = 0; i < boards_map_.size(); ++i) {
-		boards.add_row({ std::to_string(i), boards_map_.at(std::to_string(i)).name });
-	}
-
-	for (auto i = 0; i < 2; i++) {
-		// Center all the collumns of the first row
-		boards[0][i].format()
-			// For some reason if embedded inside another table
-			// the header cannot be colored
-			//.font_color(tabulate::Color::green)
-			.font_align(tabulate::FontAlign::center)
-			.font_style({ tabulate::FontStyle::bold });
-	}
-
-	header.add_row({ boards });
-	header[1].format().hide_border_top();
-
-	std::cout << header << std::endl;
+	// Due to the response sorts the board name, so we have to make another request to get the correct ID
+	view_board();
 
 	return true;
 }
