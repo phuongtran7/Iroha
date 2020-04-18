@@ -261,7 +261,7 @@ void Client::view_card(const std::string& list_id)
 	std::cout << header << std::endl;
 }
 
-bool Client::create_board(std::string name)
+bool Client::create_board(std::string& name)
 {
 	// Check whether the board is already created
 	for (auto& board : boards_map_) {
@@ -299,7 +299,7 @@ bool Client::create_board(std::string name)
 	return true;
 }
 
-bool Client::create_list(const std::string& board_id, std::string name)
+bool Client::create_list(const std::string& board_id, std::string& name)
 {
 	// Check whether the list is already created
 	for (auto& list : lists_map_) {
