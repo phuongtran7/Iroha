@@ -2,6 +2,8 @@
 
 int main()
 {
+    fmt::print("Welcome to Iroha.\n");
+
     // The io_context is required for all I/O
     boost::asio::io_context ioc;
 
@@ -17,7 +19,6 @@ int main()
     Client client{ioc, ctx};
 
     auto running = true;
-
     while (running) {
         running = client.get_user_input();
     }

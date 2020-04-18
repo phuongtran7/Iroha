@@ -36,12 +36,14 @@ private:
 	robin_hood::unordered_map<std::string, Item> boards_map_;
 	robin_hood::unordered_map<std::string, Item> lists_map_;
 	robin_hood::unordered_map<std::string, Item> cards_map_;
+	tabulate::Table help_table_;
 
 private:
 	void make_secrect();
 	void init();
 	void make_request(boost::beast::http::verb type, const std::string& target);
 	std::string trim_to_new_line(const std::string& input);
+	void create_help_table();
 
 public:
 	Client(boost::asio::io_context& ioc, ssl::context& ctx);

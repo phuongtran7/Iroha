@@ -56,12 +56,44 @@ std::string Client::trim_to_new_line(const std::string& input)
 	return fmt::format("{}...", input.substr(0, pos));
 }
 
+void Client::create_help_table()
+{
+	help_table_.add_row({ "Available Commands" });
+	help_table_[0][0].format()
+		.font_color(tabulate::Color::green)
+		.font_align(tabulate::FontAlign::center)
+		.font_style({ tabulate::FontStyle::bold });
+
+
+	tabulate::Table items;
+	items.add_row({ "Name", "Description" });
+
+	items.add_row({ "view [ID]" , "Display Boards/Lists/Cards" });
+	items.add_row({ "create [ID]" , "Create new Boards/Lists/Cards" });
+	items.add_row({ "update [ID]" , "Update Boards/Lists/Cards" });
+	items.add_row({ "close [ID]" , "Close Boards/Lists/Cards" });
+	items.add_row({ "quit [ID]" , "Quit the application" });
+	items.add_row({ "help [ID]" , "Display available commands" });
+
+	for (auto i = 0; i < 2; i++) {
+		// Center all the collumns of the first row
+		items[0][i].format()
+			.font_align(tabulate::FontAlign::center)
+			.font_style({ tabulate::FontStyle::bold });
+	}
+
+	help_table_.add_row({ items });
+	help_table_[1].format().hide_border_top();
+}
+
 Client::Client(boost::asio::io_context& ioc, ssl::context& ctx) :
 	resolver_{ ioc },
 	stream_{ ioc, ctx }
 {
 	make_secrect();
 	init();
+	create_help_table();
+	display_help();
 }
 
 Client::~Client()
@@ -76,7 +108,7 @@ Client::~Client()
 		ec = {};
 	}
 	if (ec) {
-		throw beast::system_error{ ec };
+		//throw beast::system_error{ ec };
 	}
 }
 
@@ -86,7 +118,8 @@ Client::Client(Client&& other) noexcept :
 	req_(std::move(other.req_)),
 	buffer_(std::move(other.buffer_)),
 	secrect_(std::move(other.secrect_)),
-	boards_map_(std::move(other.boards_map_))
+	boards_map_(std::move(other.boards_map_)),
+	help_table_(std::move(other.help_table_))
 {
 }
 
@@ -98,6 +131,7 @@ Client& Client::operator=(Client&& other) noexcept
 	std::swap(buffer_, other.buffer_);
 	std::swap(secrect_, other.secrect_);
 	std::swap(boards_map_, other.boards_map_);
+	std::swap(help_table_, other.help_table_);
 
 	return *this;
 }
@@ -703,33 +737,5 @@ bool Client::get_user_input()
 
 void Client::display_help()
 {
-	tabulate::Table header;
-	header.add_row({ "Available Commands" });
-	header[0][0].format()
-		.font_color(tabulate::Color::green)
-		.font_align(tabulate::FontAlign::center)
-		.font_style({ tabulate::FontStyle::bold });
-
-
-	tabulate::Table items;
-	items.add_row({ "Name", "Description" });
-
-	items.add_row({ "view [ID]" , "Display Boards/Lists/Cards" });
-	items.add_row({ "create [ID]" , "Create new Boards/Lists/Cards" });
-	items.add_row({ "update [ID]" , "Update Boards/Lists/Cards" });
-	items.add_row({ "close [ID]" , "Close Boards/Lists/Cards" });
-	items.add_row({ "quit [ID]" , "Quit the application" });
-	items.add_row({ "help [ID]" , "Display available commands" });
-
-	for (auto i = 0; i < 2; i++) {
-		// Center all the collumns of the first row
-		items[0][i].format()
-			.font_align(tabulate::FontAlign::center)
-			.font_style({ tabulate::FontStyle::bold });
-	}
-
-	header.add_row({ items });
-	header[1].format().hide_border_top();
-
-	std::cout << header << std::endl;
+	std::cout << help_table_ << std::endl;
 }
