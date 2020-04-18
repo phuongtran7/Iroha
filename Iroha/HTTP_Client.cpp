@@ -92,6 +92,10 @@ Client& Client::operator=(Client&& other) noexcept
 
 void Client::view_board()
 {
+	if (boards_map_.size() != 0) {
+		boards_map_.clear();
+	}
+
 	http::response<http::string_body> res;
 
 	auto const target = fmt::format("/1/members/me/boards?fields=name&filter=open&{}", secrect_);
@@ -142,6 +146,10 @@ void Client::view_board()
 
 void Client::view_list(const std::string& board_id)
 {
+	if (lists_map_.size() != 0) {
+		lists_map_.clear();
+	}
+
 	// Search for trello ID using user-friendly board ID
 	auto board = boards_map_.find(board_id)->second;
 
@@ -192,11 +200,15 @@ void Client::view_list(const std::string& board_id)
 
 void Client::view_card(const std::string& list_id)
 {
+	if (cards_map_.size() != 0) {
+		cards_map_.clear();
+	}
+
 	// Search for trello ID using user-friendly board ID
 	auto list = lists_map_.find(list_id)->second;
 
 	http::response<http::string_body> res;
-	
+
 	// Currently only need to get id, name and desciption of a card
 	auto const target = fmt::format("/1/lists/{}/cards?fields=name,desc,id&{}", list.trello_id, secrect_);
 	make_request(http::verb::get, target);
@@ -247,4 +259,71 @@ void Client::view_card(const std::string& list_id)
 	header[1].format().hide_border_top();
 
 	std::cout << header << std::endl;
+}
+
+bool Client::create_board(const std::string& name)
+{
+	// Check whether the board is already created
+	for (auto& board : boards_map_) {
+		if (name == board.second.name) {
+			fmt::print("There is already a board named [{}]\n", name);
+			return false;
+		}
+	}
+
+	http::response<http::string_body> res;
+	auto const target = fmt::format("/1/boards/?name={}&defaultLists=false&{}", name, secrect_);
+	make_request(http::verb::post, target);
+
+	// Send the HTTP request to the remote host
+	http::write(stream_, req_);
+
+	// Receive the HTTP response
+	http::read(stream_, buffer_, res);
+
+	if (res.result() != http::status::ok) {
+		fmt::print("Create board failed: {}: {}\n", res.result_int(), res.reason().to_string());
+		return false;
+	}
+
+	// Write the message to standard out
+	//std::cout << res << std::endl;
+
+	// Add the new board to boards_map_
+	nlohmann::json body = nlohmann::json::parse(res.body());
+	Item board{ body.find("id").value() , body.find("name").value() };
+	auto current_size = std::to_string(boards_map_.size());
+	boards_map_.emplace(current_size, board);
+
+	tabulate::Table header;
+	header.add_row({ "Boards" });
+	header[0][0].format()
+		.font_color(tabulate::Color::green)
+		.font_align(tabulate::FontAlign::center)
+		.font_style({ tabulate::FontStyle::bold });
+
+
+	tabulate::Table boards;
+	boards.add_row({ "ID", "Name" });
+
+	for (auto i = 0; i < boards_map_.size(); ++i) {
+		boards.add_row({ std::to_string(i), boards_map_.at(std::to_string(i)).name });
+	}
+
+	for (auto i = 0; i < 2; i++) {
+		// Center all the collumns of the first row
+		boards[0][i].format()
+			// For some reason if embedded inside another table
+			// the header cannot be colored
+			//.font_color(tabulate::Color::green)
+			.font_align(tabulate::FontAlign::center)
+			.font_style({ tabulate::FontStyle::bold });
+	}
+
+	header.add_row({ boards });
+	header[1].format().hide_border_top();
+
+	std::cout << header << std::endl;
+
+	return true;
 }

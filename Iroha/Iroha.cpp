@@ -20,6 +20,8 @@ int main()
     client.view_list("2");
     client.view_card("2-2");
 
+    client.create_board("Iroha");
+
     std::getchar();
 	return 0;
 }
