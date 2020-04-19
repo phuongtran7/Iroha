@@ -187,6 +187,12 @@ void Client::view_board()
 		boards_map_.emplace(std::to_string(i), board);
 	}
 
+	for (auto i = 0; i < body.size(); i++) {
+		// Force fixed size
+		boards[i][0].format().width(10);
+		boards[i][1].format().width(25);
+	}
+
 	for (auto i = 0; i < 2; i++) {
 		// Center all the collumns of the first row
 		boards[0][i].format()
@@ -252,6 +258,12 @@ void Client::view_list(const std::string& board_id)
 		lists.add_row({ list_id, body[i].find("name").value() });
 		Item list{ body[i].find("id").value() , body[i].find("name").value() };
 		lists_map_.emplace(list_id, list);
+	}
+
+	for (auto i = 0; i < body.size(); i++) {
+		// Force fixed size
+		lists[i][0].format().width(10);
+		lists[i][1].format().width(25);
 	}
 
 	for (auto i = 0; i < 2; i++) {
@@ -323,7 +335,8 @@ void Client::view_card(const std::string& list_id)
 	}
 
 	for (auto i = 0; i < body.size(); i++) {
-		// Force fixed size on name and desc column
+		// Force fixed size
+		cards[i][0].format().width(10);
 		cards[i][1].format().width(25);
 		cards[i][2].format().width(50);
 	}
