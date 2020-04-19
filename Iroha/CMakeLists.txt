@@ -27,3 +27,7 @@ target_link_libraries(Iroha PRIVATE
 if (MSVC)
 	target_compile_definitions(Iroha PRIVATE _WIN32_WINNT=0x0A00)
 endif (MSVC)
+
+if (UNIX)
+	target_link_libraries(Iroha PRIVATE stdc++fs)
+endif (UNIX)

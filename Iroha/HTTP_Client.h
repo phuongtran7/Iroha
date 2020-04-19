@@ -8,7 +8,6 @@
 #include <boost/algorithm/string.hpp> 
 #include <boost/range/algorithm/count.hpp>
 #include <iostream>
-#include <memory>
 #include <string>
 #include <string_view>
 #include "fmt/format.h"
@@ -16,10 +15,11 @@
 #include <tabulate/table.hpp>
 #include <robin-hood-hashing/robin_hood.h>
 #include "yaml-cpp/yaml.h"
+#include <filesystem>
 
 class Client {
 private:
-	//Represent each item in Trello
+	// Represent each item in Trello
 	// Either a board, a list or a card
 	struct Item {
 		std::string trello_id;
@@ -32,7 +32,7 @@ private:
 	const unsigned short version_{ 11 };
 	boost::beast::http::request<boost::beast::http::empty_body> req_;
 	boost::beast::flat_buffer buffer_;
-	std::string secrect_;
+	std::string secrect_{};
 	robin_hood::unordered_map<std::string, Item> boards_map_;
 	robin_hood::unordered_map<std::string, Item> lists_map_;
 	robin_hood::unordered_map<std::string, Item> cards_map_;

@@ -8,7 +8,22 @@ using tcp = boost::asio::ip::tcp;
 
 void Client::make_secrect()
 {
-	YAML::Node config = YAML::LoadFile("Config.yaml");
+	std::string config_path{};
+	auto current_path = std::filesystem::current_path();
+	for (const auto& entry : std::filesystem::directory_iterator(current_path)) {
+		// Look for ".yaml" file
+		auto ext = entry.path().extension().generic_string();
+		if (ext == ".yaml") {
+			config_path = entry.path().generic_string();
+		}
+	}
+
+	if (config_path.empty()) {
+		fmt::print("Cannot find config file. Exiting.\n");
+		return;
+	}
+
+	YAML::Node config = YAML::LoadFile(config_path);
 	auto key = config["Key"].as<std::string>();
 	auto token = config["Token"].as<std::string>();
 
@@ -91,9 +106,11 @@ Client::Client(boost::asio::io_context& ioc, ssl::context& ctx) :
 	stream_{ ioc, ctx }
 {
 	make_secrect();
-	init();
-	create_help_table();
-	display_help();
+	if (!secrect_.empty()) {
+		init();
+		create_help_table();
+		display_help();
+	}
 }
 
 Client::~Client()
@@ -609,6 +626,11 @@ bool Client::close(const std::string& id)
 bool Client::get_user_input()
 {
 	using namespace boost::algorithm;
+
+	if (secrect_.empty()) {
+		// Make sure that the key and token present.
+		return false;
+	}
 
 	fmt::print("Action: ");
 	std::string input{};
