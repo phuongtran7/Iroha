@@ -170,7 +170,7 @@ void Client::view_board()
 	}
 
 	tabulate::Table header;
-	header.add_row({ "Boards" });
+	header.add_row({ "Workspace" });
 	header[0][0].format()
 		.font_color(tabulate::Color::green)
 		.font_align(tabulate::FontAlign::center)
@@ -242,7 +242,7 @@ void Client::view_list(const std::string& board_id)
 	}
 
 	tabulate::Table header;
-	header.add_row({ "Lists" });
+	header.add_row({ board->second.name });
 	header[0][0].format()
 		.font_color(tabulate::Color::green)
 		.font_align(tabulate::FontAlign::center)
@@ -315,7 +315,7 @@ void Client::view_card(const std::string& list_id)
 	}
 
 	tabulate::Table header;
-	header.add_row({ "Cards" });
+	header.add_row({ list->second.name });
 	header[0][0].format()
 		.font_color(tabulate::Color::green)
 		.font_align(tabulate::FontAlign::center)
