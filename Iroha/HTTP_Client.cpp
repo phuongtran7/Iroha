@@ -104,18 +104,32 @@ void Client::create_help_table()
 	help_table_[1].format().hide_border_top();
 }
 
-void Client::force_line_break(std::string& input, unsigned short num_char)
+std::string Client::force_line_break(const std::string& input, unsigned short num_char)
 {
-	// Forcing line break after number of characters in string
-	for (auto it = input.begin(); it < input.end();) {
-		input.insert(it, '\n');
-		if (std::distance(it, input.end()) > num_char) {
-			std::advance(it, num_char);
-		}
-		else {
-			it = input.end();
+	// First split the input into multiple lines
+	std::vector<std::string> results;
+	boost::algorithm::split(results, input, boost::is_any_of("\n"));
+
+	for (auto& line : results) {
+		if (line.size() > num_char) {
+			// Forcing line break after number of characters in string
+			for (auto it = line.begin(); it < line.end();) {
+				line.insert(it, '\n');
+				if (std::distance(it, line.end()) > num_char) {
+					std::advance(it, num_char);
+				}
+				else {
+					it = line.end();
+				}
+			}
 		}
 	}
+
+	std::string return_string;
+	for (const auto& piece : results) {
+		return_string += piece;
+	}
+	return return_string;
 }
 
 Client::Client(boost::asio::io_context& ioc, ssl::context& ctx) :
@@ -411,13 +425,11 @@ void Client::view_card_detail(const std::string& card_id)
 
 	tabulate::Table card_detail;
 	card_detail.add_row({ body.find("name").value() });
-	std::string desc = body.find("desc").value();
-	force_line_break(desc, 80);
-	card_detail.add_row({ desc });
+	card_detail.add_row({ force_line_break(body.find("desc").value(), 85) });
 
 	// Force fixed size
-	card_detail[0][0].format().width(85);
-	card_detail[1][0].format().width(85);
+	card_detail[0][0].format().width(87);
+	card_detail[1][0].format().width(87);
 
 	header.add_row({ card_detail });
 	header[1].format().hide_border_top();

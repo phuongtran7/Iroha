@@ -42,7 +42,7 @@ private:
 	void make_request(boost::beast::http::verb type, const std::string& target);
 	std::string trim_to_new_line(const std::string& input);
 	void create_help_table();
-	void force_line_break(std::string& input, unsigned short num_char);
+	std::string force_line_break(const std::string& input, unsigned short num_char);
 
 public:
 	Client(boost::asio::io_context& ioc, ssl::context& ctx);
