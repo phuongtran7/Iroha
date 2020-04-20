@@ -424,12 +424,18 @@ void Client::view_card_detail(const std::string& card_id)
 	nlohmann::json body = nlohmann::json::parse(res.body());
 
 	tabulate::Table card_detail;
-	card_detail.add_row({ body.find("name").value() });
-	card_detail.add_row({ force_line_break(body.find("desc").value(), 85) });
+	card_detail.add_row({ "Name" , body.find("name").value() });
+	card_detail.add_row({ "Description", force_line_break(body.find("desc").value(), 70) });
 
 	// Force fixed size
-	card_detail[0][0].format().width(87);
-	card_detail[1][0].format().width(87);
+	card_detail[0][0].format().width(85);
+	card_detail[1][0].format().width(85);
+
+	for (auto i = 0; i < 2; i++) {
+		// Force fixed size
+		card_detail[i][0].format().width(15);
+		card_detail[i][1].format().width(71);
+	}
 
 	header.add_row({ card_detail });
 	header[1].format().hide_border_top();
