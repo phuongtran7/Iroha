@@ -64,10 +64,13 @@ void Client::make_request(http::verb type, const std::string& target)
 
 std::string Client::trim_to_new_line(const std::string& input)
 {
-	if (input.empty()) {
-		return std::string{};
+	auto pos = input.find("\n");
+
+	if (pos == std::string::npos) {
+		// Return full string if there is only one
+		return input;
 	}
-	std::size_t pos = input.find("\n");
+
 	return fmt::format("{}...", input.substr(0, pos));
 }
 

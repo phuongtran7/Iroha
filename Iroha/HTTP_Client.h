@@ -25,9 +25,9 @@ private:
 	};
 	boost::asio::ip::tcp::resolver resolver_;
 	boost::beast::ssl_stream<boost::beast::tcp_stream> stream_;
-	const std::string host_{"api.trello.com"};
-	const unsigned short port_{ 443 };
-	const unsigned short version_{ 11 };
+	std::string const host_{"api.trello.com"};
+	unsigned short const port_{ 443 };
+	unsigned short const version_{ 11 };
 	boost::beast::http::request<boost::beast::http::empty_body> req_;
 	boost::beast::flat_buffer buffer_;
 	std::string secrect_{};
