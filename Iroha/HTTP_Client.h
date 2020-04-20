@@ -42,6 +42,7 @@ private:
 	void make_request(boost::beast::http::verb type, const std::string& target);
 	std::string trim_to_new_line(const std::string& input);
 	void create_help_table();
+	void force_line_break(std::string& input, unsigned short num_char);
 
 public:
 	Client(boost::asio::io_context& ioc, ssl::context& ctx);
@@ -59,6 +60,7 @@ public:
 	void view_board(); // View all available board
 	void view_list(const std::string& board_id); // View lists in a particualar board
 	void view_card(const std::string& list_id); // View cards in list
+	void view_card_detail(const std::string& card_id); // view specific card detail. Will show the card's name and desc in full text
 
 	bool create_board(std::string& name);
 	bool create_list(const std::string& board_id, std::string& name);

@@ -104,6 +104,20 @@ void Client::create_help_table()
 	help_table_[1].format().hide_border_top();
 }
 
+void Client::force_line_break(std::string& input, unsigned short num_char)
+{
+	// Forcing line break after number of characters in string
+	for (auto it = input.begin(); it < input.end();) {
+		input.insert(it, '\n');
+		if (std::distance(it, input.end()) > num_char) {
+			std::advance(it, num_char);
+		}
+		else {
+			it = input.end();
+		}
+	}
+}
+
 Client::Client(boost::asio::io_context& ioc, ssl::context& ctx) :
 	resolver_{ ioc },
 	stream_{ ioc, ctx }
@@ -296,7 +310,6 @@ void Client::view_card(const std::string& list_id)
 		return;
 	}
 
-
 	http::response<http::string_body> res;
 
 	// Currently only need to get id, name and desciption of a card
@@ -352,6 +365,61 @@ void Client::view_card(const std::string& list_id)
 	}
 
 	header.add_row({ cards });
+	header[1].format().hide_border_top();
+
+	std::cout << header << std::endl;
+}
+
+void Client::view_card_detail(const std::string& card_id)
+{
+	// Search for trello ID using user-friendly card ID
+	auto card = cards_map_.find(card_id);
+
+	if (card == cards_map_.end()) {
+		fmt::print("View card detail failed. Cannot find card with ID: {}\n", card_id);
+		return;
+	}
+
+	http::response<http::string_body> res;
+
+	// Currently only need to get id, name and desciption of a card
+	auto const target = fmt::format("/1/cards/{}?fields=name,desc&{}", card->second.trello_id, secrect_);
+	make_request(http::verb::get, target);
+
+	// Send the HTTP request to the remote host
+	http::write(stream_, req_);
+
+	// Receive the HTTP response
+	http::read(stream_, buffer_, res);
+
+	// Write the message to standard out
+	//std::cout << res << std::endl;
+
+	if (res.body().empty()) {
+		fmt::print("Wow, such empty.\n");
+		return;
+	}
+
+	tabulate::Table header;
+	header.add_row({ fmt::format("Card Detail {}", card_id) });
+	header[0][0].format()
+		.font_color(tabulate::Color::green)
+		.font_align(tabulate::FontAlign::center)
+		.font_style({ tabulate::FontStyle::bold });
+
+	nlohmann::json body = nlohmann::json::parse(res.body());
+
+	tabulate::Table card_detail;
+	card_detail.add_row({ body.find("name").value() });
+	std::string desc = body.find("desc").value();
+	force_line_break(desc, 80);
+	card_detail.add_row({ desc });
+
+	// Force fixed size
+	card_detail[0][0].format().width(85);
+	card_detail[1][0].format().width(85);
+
+	header.add_row({ card_detail });
 	header[1].format().hide_border_top();
 
 	std::cout << header << std::endl;
@@ -663,7 +731,12 @@ bool Client::get_user_input()
 	if (results.front() == "view") {
 		if (results.size() != 1) {
 			if (contains(results[1], "-")) {
-				view_card(results[1]);
+				if (std::count(results[1].begin(), results[1].end(), '-') > 1) {
+					view_card_detail(results[1]);
+				}
+				else {
+					view_card(results[1]);
+				}
 			}
 			else {
 				view_list(results[1]);
