@@ -361,7 +361,7 @@ bool Client::create_board(std::string& name)
 	http::response<http::string_body> res;
 
 	// Replace all space in name with HTML code
-	boost::replace_all(name, " ", "+");
+	std::replace(name.begin(), name.end(), ' ', '+');
 
 	auto const target = fmt::format("/1/boards/?name={}&defaultLists=false&{}", name, secrect_);
 	make_request(http::verb::post, target);
@@ -399,7 +399,7 @@ bool Client::create_list(const std::string& board_id, std::string& name)
 	http::response<http::string_body> res;
 
 	// Replace all space in name with HTML code
-	boost::replace_all(name, " ", "+");
+	std::replace(name.begin(), name.end(), ' ', '+');
 
 	auto const target = fmt::format("/1/lists?name={}&idBoard={}&{}", name, list->second.trello_id, secrect_);
 	make_request(http::verb::post, target);
@@ -436,7 +436,7 @@ bool Client::create_card(const std::string& list_id, std::string& name)
 	http::response<http::string_body> res;
 
 	// Replace all space in name with HTML code
-	boost::replace_all(name, " ", "+");
+	std::replace(name.begin(), name.end(), ' ', '+');
 
 	auto const target = fmt::format("/1/cards?name={}&idList={}&{}", name, card->second.trello_id, secrect_);
 	make_request(http::verb::post, target);
@@ -473,7 +473,7 @@ bool Client::update_board(const std::string& board_id, std::string& new_name)
 	http::response<http::string_body> res;
 
 	// Replace all space in name with HTML code
-	boost::replace_all(new_name, " ", "+");
+	std::replace(new_name.begin(), new_name.end(), ' ', '+');
 
 	auto const target = fmt::format("/1/boards/{}?name={}&{}", board->second.trello_id, new_name, secrect_);
 	make_request(http::verb::put, target);
@@ -510,7 +510,7 @@ bool Client::update_list(const std::string& list_id, std::string& new_name)
 	http::response<http::string_body> res;
 
 	// Replace all space in name with HTML code
-	boost::replace_all(new_name, " ", "+");
+	std::replace(new_name.begin(), new_name.end(), ' ', '+');
 
 	auto const target = fmt::format("/1/lists/{}?name={}&{}", list->second.trello_id, new_name, secrect_);
 	make_request(http::verb::put, target);
@@ -547,8 +547,9 @@ bool Client::update_card(const std::string& card_id, std::string& new_name, std:
 	http::response<http::string_body> res;
 
 	// Replace all space in name with HTML code
-	boost::replace_all(new_name, " ", "+");
-	boost::replace_all(new_desc, " ", "+");
+	std::replace(new_name.begin(), new_name.end(), ' ', '+');
+	std::replace(new_desc.begin(), new_desc.end(), ' ', '+');
+
 
 	auto const target = fmt::format("/1/cards/{}?name={}&desc={}&{}", card->second.trello_id, new_name, new_desc, secrect_);
 	make_request(http::verb::put, target);
@@ -574,7 +575,7 @@ bool Client::update_card(const std::string& card_id, std::string& new_name, std:
 
 bool Client::close(const std::string& id)
 {
-	auto count = boost::count(id, '-');
+	auto count = std::count(id.begin(), id.end(), '-');
 	std::string target{};
 
 	if (count == 0) {
@@ -700,7 +701,7 @@ bool Client::get_user_input()
 	else if (results.front() == "update") {
 		if (results.size() != 1) {
 			if (contains(results[1], "-")) {
-				if (boost::count(results[1], '-') > 1) {
+				if (std::count(results[1].begin(), results[1].end(), '-') > 1) {
 					// Update card
 					fmt::print("New Card name:\n");
 					std::string name_input{};

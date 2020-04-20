@@ -11,7 +11,6 @@
 
 1. Install all dependencies with Microsoft's [vcpkg](https://github.com/Microsoft/vcpkg).
     * `vcpkg install boost-beast`
-    * `vcpkg install boost-range`
     * `vcpkg install fmt`
     * `vcpkg install yaml-cpp`
     * `vcpkg install openssl`

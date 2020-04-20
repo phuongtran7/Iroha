@@ -5,7 +5,7 @@
 #include <boost/beast/ssl.hpp>
 #include <boost/beast/version.hpp>
 #include <boost/algorithm/string.hpp> 
-#include <boost/range/algorithm/count.hpp>
+#include <algorithm>
 #include <iostream>
 #include <string>
 #include "fmt/format.h"
