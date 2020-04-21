@@ -8,22 +8,18 @@ using tcp = boost::asio::ip::tcp;
 
 void Client::make_secrect()
 {
-	std::string config_path{};
-	auto current_path = std::filesystem::current_path();
-	for (const auto& entry : std::filesystem::directory_iterator(current_path)) {
-		// Look for ".yaml" file
-		auto ext = entry.path().extension().generic_string();
-		if (ext == ".yaml") {
-			config_path = entry.path().generic_string();
-		}
-	}
+	auto dir_it = std::filesystem::directory_iterator(std::filesystem::current_path());
+	auto result = std::find_if(std::filesystem::begin(dir_it), std::filesystem::end(dir_it), [](std::filesystem::directory_entry entry)
+		{
+			return entry.path().extension().string() == ".yaml";
+		});
 
-	if (config_path.empty()) {
+	if (result == std::filesystem::end(dir_it)) {
 		fmt::print("Cannot find config file. Exiting.\n");
 		return;
 	}
 
-	YAML::Node config = YAML::LoadFile(config_path);
+	YAML::Node config = YAML::LoadFile(result->path().string());
 	auto key = config["Key"].as<std::string>();
 	auto token = config["Token"].as<std::string>();
 
