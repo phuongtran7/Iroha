@@ -48,6 +48,7 @@ The `view` command is used for displaying all the item in a particular place.
 * `view`: Will display all the open `Boards` in Trello account.
 * `view 0`: Will display all the `Lists` inside the 0 index `Board`.
 * `view 0-1`: Will display the `Cards` inside 0 index `Board` and 1 index `List`.
+* `view 0-1-3`: Will display the content of 3 index `Card` in 1 index `List` of the 0 index `Board`.
 
 *Create*
 
